@@ -475,13 +475,8 @@ pamuk_ssh_key
 ansible-test
 # Minecraft-Specific (JARs, server files, worlds, logs—large/temp data from benchmarks)
 
-eula.txt
-server.properties
-banned-ips.json
-banned-players.json
 ops.json
-usercache.json
-whitelist.json
+
 world/
 world_nether/
 world_the_end/
