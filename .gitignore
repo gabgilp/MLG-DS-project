@@ -474,7 +474,7 @@ scratch
 pamuk_ssh_key
 ansible-test
 # Minecraft-Specific (JARs, server files, worlds, logs—large/temp data from benchmarks)
-*.jar
+
 eula.txt
 server.properties
 banned-ips.json
@@ -488,7 +488,7 @@ world_the_end/
 logs/*.gz
 *.pid  # PID files from server start/stop
 
-# Conda/Miniconda (from your env paths like miniconda3/envs/py39)
+# Conda/Miniconda 
 .conda/
 conda-meta/
 miniconda3/
@@ -499,12 +499,12 @@ Thumbs.db  # Windows
 *.swp  # Vim swap files
 *~  # Editor backups
 
-# Yardstick/DAS-Specific (benchmark outputs, scratch dirs—adjust if you commit any)
+# Yardstick/DAS-Specific 
 scratch/
 var/scratch/
 *.timestamp  # If you have timestamped dirs/files
 
-# Additional Python/Env (expands on existing)
+# Additional Python/Env
 *.pyc
 *.pyo
 *.pyd
