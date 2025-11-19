@@ -1,0 +1,24 @@
+---
+- name: Deploy VanillaMC
+  gather_facts: true
+  hosts: all
+  tasks:
+    - file:
+        path: "{{ wd }}"
+        state: directory
+    - name: Download VanillaMC
+      get_url:
+        url: https://piston-data.mojang.com/v1/objects/84194a2f286ef7c14ed7ce0090dba59902951553/server.jar
+        dest: "{{ wd }}/minecraft_server-1.20.1.jar"
+    - name: Copy config file
+      template:
+        src: "{{vanilla_template}}"
+        dest: "{{wd}}/server.properties" 
+    - name: Accept EULA
+      copy:
+        content: "eula=true"
+        dest: "{{ wd }}/eula.txt"
+    - name: Download Jolokia JVM Agent
+      get_url:
+        url: https://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-agent-jvm/2.0.3/jolokia-agent-jvm-2.0.3-javaagent.jar
+        dest: "{{wd}}/jolokia-agent-jvm-2.0.3-javaagent.jar"

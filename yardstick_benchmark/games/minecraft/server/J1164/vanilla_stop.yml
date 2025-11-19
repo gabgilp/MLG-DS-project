@@ -1,0 +1,27 @@
+---
+- name: Stop VanillaMC
+  gather_facts: true
+  hosts: all
+  tasks:
+    - name: Find VanillaMC PID
+      shell: |
+        cat {{wd}}/vanillamc.pid
+      register: shell_vanillamc_pid
+    - name: Obtain VanillaMC pid
+      set_fact:
+        vanillamc_pid: "{{ shell_vanillamc_pid.stdout }}"
+    - name: Stop VanillaMC
+      shell: |
+        kill {{vanillamc_pid}}
+    - name: Wait for VanillaMC to stop
+      block:
+        - wait_for:
+            # Using https://stackoverflow.com/questions/46515704/how-to-kill-a-running-process-using-ansible/46541018#46541018
+            path: "/proc/{{ vanillamc_pid }}/status"
+            state: absent
+            timeout: 15
+          register: wait_for_stop
+      rescue:
+        - name: Force kill stuck processes
+          shell: |
+            kill -9 {{vanillamc_pid}}
