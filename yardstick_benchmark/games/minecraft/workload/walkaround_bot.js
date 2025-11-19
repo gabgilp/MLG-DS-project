@@ -12,11 +12,19 @@ const bot_index = process.env.BOT_INDEX;
 const box_x = process.env.BOX_X;
 const box_z = process.env.BOX_Z;
 
+const workloadVariant = process.env.WORKLOAD_VARIANT ?? "walkaround"; // Default to "walkaround" if not specified
+
 const start = Date.now()
 
 const workers = new Set();
 
 const center = v(box_x, 90, box_z);
+
+const workerScripts = {
+    walkaround: "./walkaround_worker_bot.js",
+    northwest: "./walknorthwest_worker_bot.js",
+    upsouthnorth: "./walkupsouthnorth_worker_bot.js",
+};
 
 function sleep(ms) {
     return new Promise((resolve) => {
@@ -32,8 +40,9 @@ function start_worker(username) {
         box_center: center,
         box_width: box_width,
     }
+    const workerScript = workerScripts[workloadVariant] ?? workerScripts["walkaround"];
     return new Promise((resolve, reject) => {
-        const worker = new Worker("./walkaround_worker_bot.js", { workerData });
+        const worker = new Worker(workerScript, { workerData });
 
         worker.on("message", resolve);
         worker.on("error", reject);
