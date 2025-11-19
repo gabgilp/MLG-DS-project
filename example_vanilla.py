@@ -44,7 +44,6 @@ if __name__ == "__main__":
 
         ### System Under Test (SUT) ###
 
-        # Changed from PaperMC to VanillaMC for running on a real (vanilla) Minecraft server.
         # VanillaMC handles deployment of the official Mojang vanilla server JAR.
         vanillamc = Java1164(nodes[:1])
         # Perform the deployment, including downloading the vanilla server JAR and
