@@ -11,6 +11,7 @@
     BOX_Z: "{{box_z}}"
     BOTS_JOIN_DELAY: "{{bots_join_delay}}"
     BOTS_PER_NODE: "{{bots_per_node}}"
+    WORKLOAD_VARIANT: "{{workload_variant}}"
   tasks:
     - name: Set game spawn location
       shell:

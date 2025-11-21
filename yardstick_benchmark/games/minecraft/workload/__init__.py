@@ -17,6 +17,7 @@ class WalkAround(RemoteApplication):
         box_z: int = -16,
         bots_join_delay: timedelta = timedelta(seconds=5),
         bots_per_node: int = 1,
+        workload_variant: str = "walkaround",
     ):
         super().__init__(
             "walkaround",
@@ -31,6 +32,8 @@ class WalkAround(RemoteApplication):
                     str(Path(__file__).parent / "set_spawn.js"),
                     str(Path(__file__).parent / "walkaround_bot.js"),
                     str(Path(__file__).parent / "walkaround_worker_bot.js"),
+                    str(Path(__file__).parent / "walknorthwest_worker_bot.js"),
+                    str(Path(__file__).parent / "walkupsouthnorth_worker_bot.js"),
                 ],
                 "duration": duration.total_seconds(),
                 "mc_host": server_host,
@@ -41,5 +44,6 @@ class WalkAround(RemoteApplication):
                 "box_z": box_z,
                 "bots_join_delay": bots_join_delay.total_seconds(),
                 "bots_per_node": bots_per_node,
+                "workload_variant": workload_variant,
             },
         )
