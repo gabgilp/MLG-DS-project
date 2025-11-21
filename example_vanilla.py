@@ -45,7 +45,9 @@ if __name__ == "__main__":
         ### System Under Test (SUT) ###
 
         # VanillaMC handles deployment of the official Mojang vanilla server JAR.
-        vanillamc = Java1164(nodes[:1])
+        # Pass a version from yardstick_benchmark/games/minecraft/server/J1164/vanilla_version_urls.json
+        # (defaults to the first entry if omitted).
+        vanillamc = Java1164(nodes[:1], version="1.20.1")
         # Perform the deployment, including downloading the vanilla server JAR and
         # correctly configuring the server's properties file.
         vanillamc.deploy()

@@ -8,8 +8,8 @@
         state: directory
     - name: Download VanillaMC
       get_url:
-        url: https://piston-data.mojang.com/v1/objects/84194a2f286ef7c14ed7ce0090dba59902951553/server.jar
-        dest: "{{ wd }}/minecraft_server-1.20.1.jar"
+        url: "{{ vanilla_server_url }}"
+        dest: "{{ wd }}/{{ vanilla_server_jar }}"
     - name: Copy config file
       template:
         src: "{{vanilla_template}}"
