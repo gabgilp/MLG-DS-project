@@ -1,0 +1,20 @@
+---
+- hosts: all
+  gather_facts: True
+  tasks:
+    - name: Stop Blaze Spawner bots
+      shell:
+        cmd: |
+          # Kill all bot processes
+          for pidfile in blazespawner-{{ inventory_hostname }}-*.pid; do
+            if [ -f "$pidfile" ]; then
+              pid=$(cat "$pidfile")
+              if kill -0 "$pid" 2>/dev/null; then
+                echo "Stopping blaze spawner bot with PID $pid"
+                kill "$pid"
+              fi
+              rm -f "$pidfile"
+            fi
+          done
+        chdir: "{{wd}}"
+      ignore_errors: yes

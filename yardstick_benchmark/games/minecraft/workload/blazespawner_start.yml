@@ -1,0 +1,26 @@
+---
+- hosts: all
+  gather_facts: True
+  environment:
+    DURATION: "{{duration}}"
+    MC_HOST: "{{mc_host}}"
+    BLAZE_COUNT: "{{blaze_count}}"
+    SPAWN_AREA_SIZE: "{{spawn_area_size}}"
+    SPAWN_HEIGHT: "{{spawn_height}}"
+    ALLOW_USERS: "{{allow_users}}"
+    BOTS_PER_NODE: "{{bots_per_node}}"
+  tasks:
+    - name: Run Blaze Spawner bot
+      shell:
+        cmd: |
+          source ~/.bashrc
+          nvm use 18
+          # Run multiple bots per node if specified
+          for i in $(seq 1 {{bots_per_node}}); do
+            export BOT_INDEX="${i}"
+            node blazespawner_bot.js | tee blazespawner-{{ inventory_hostname }}-${i}.log &
+            echo $! > blazespawner-{{inventory_hostname}}-${i}.pid
+            sleep 2  # Small delay between bot starts
+          done
+          wait  # Wait for all background processes
+        chdir: "{{wd}}"

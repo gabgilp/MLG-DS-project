@@ -1,0 +1,15 @@
+---
+- hosts: all
+  gather_facts: True
+  tasks:
+    - name: Clean up Blaze Spawner workload files
+      shell:
+        cmd: |
+          # Remove log files
+          rm -f blazespawner-{{ inventory_hostname }}-*.log
+          # Remove PID files (should already be removed by stop)
+          rm -f blazespawner-{{ inventory_hostname }}-*.pid
+          # Remove the bot script
+          rm -f blazespawner_bot.js
+        chdir: "{{wd}}"
+      ignore_errors: yes
