@@ -473,3 +473,34 @@ inventory.ini
 scratch
 pamuk_ssh_key
 ansible-test
+# Minecraft-Specific (JARs, server files, worlds, logs—large/temp data from benchmarks)
+
+ops.json
+
+world/
+world_nether/
+world_the_end/
+logs/*.gz
+*.pid  # PID files from server start/stop
+
+# Conda/Miniconda 
+.conda/
+conda-meta/
+miniconda3/
+
+# OS/Temp Files (general cleanup)
+.DS_Store  # macOS
+Thumbs.db  # Windows
+*.swp  # Vim swap files
+*~  # Editor backups
+
+# Yardstick/DAS-Specific 
+scratch/
+var/scratch/
+*.timestamp  # If you have timestamped dirs/files
+
+# Additional Python/Env
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
