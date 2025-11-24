@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union, Optional
 
 from yardstick_benchmark.model import Node, RemoteApplication
 
@@ -8,7 +8,7 @@ from yardstick_benchmark.model import Node, RemoteApplication
 _VANILLA_VERSION_FILE = Path(__file__).parent / "vanilla_version_urls.json"
 
 
-def _select_vanilla_version(version: str | None) -> Dict[str, str]:
+def _select_vanilla_version(version: Union[str , None]) -> Dict[str, str]:
     with _VANILLA_VERSION_FILE.open() as f:
         versions: List[Dict[str, str]] = json.load(f)
 
@@ -35,7 +35,7 @@ def _select_vanilla_version(version: str | None) -> Dict[str, str]:
 
 
 class Java1164(RemoteApplication):
-    def __init__(self, nodes: list[Node], version: str | None = None):
+    def __init__(self, nodes: list[Node], version: Optional[str] = None):
         version_entry = _select_vanilla_version(version)
 
         super().__init__(

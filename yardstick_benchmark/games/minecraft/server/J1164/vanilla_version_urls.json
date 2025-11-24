@@ -23,5 +23,60 @@
         "version": "1.16.5",
         "url": "https://piston-data.mojang.com/v1/objects/1b557e7b033b583cd9f66746b7a9ab1ec1673ced/server.jar",
         "dest": "minecraft_server.1.16.5.jar"
+    },
+    {
+        "version": "1.15.2",
+        "url": "https://piston-data.mojang.com/v1/objects/bb2b6b1aefcd70dfd1892149ac3a215f6c636b07/server.jar",
+        "dest": "minecraft_server.1.15.2.jar"
+    },
+    {
+        "version": "1.14.4",
+        "url": "https://piston-data.mojang.com/v1/objects/3dc3d84a581f14691199cf6831b71ed1296a9fdf/server.jar",
+        "dest": "minecraft_server.1.14.4.jar"
+    },
+    {
+        "version": "1.13.2",
+        "url": "https://piston-data.mojang.com/v1/objects/3737db93722a9e39eeada7c27e7aca28b144ffa7/server.jar",
+        "dest": "minecraft_server.1.13.2.jar"
+    },
+    {
+        "version": "1.12.2",
+        "url": "https://piston-data.mojang.com/v1/objects/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar",
+        "dest": "minecraft_server.1.12.2.jar"
+    },
+    {
+        "version": "1.11.2",
+        "url": "https://piston-data.mojang.com/v1/objects/f00c294a1576e03fddcac777c3cf4c7d404c4ba4/server.jar",
+        "dest": "minecraft_server.1.11.2.jar"
+    },
+    {
+        "version": "1.10.2",
+        "url": "https://piston-data.mojang.com/v1/objects/3d501b23df53c548254f5e3f66492d178a48db63/server.jar",
+        "dest": "minecraft_server.1.10.2.jar"
+    },
+    {
+        "version": "1.9.4",
+        "url": "https://piston-data.mojang.com/v1/objects/edbb7b1758af33d365bf835eb9d13de005b1e274/server.jar",
+        "dest": "minecraft_server.1.9.4.jar"
+    },
+    {
+        "version": "1.8.9",
+        "url": "https://launcher.mojang.com/v1/objects/b58b2ceb36e01bcd8dbf49c8fb66c55a9f0676cd/server.jar",
+        "dest": "minecraft_server.1.8.9.jar"
+    },
+    {
+        "version": "1.7.10",
+        "url": "https://launcher.mojang.com/v1/objects/952438ac4e01b4d115c5fc38f891710c4941df29/server.jar",
+        "dest": "minecraft_server.1.7.10.jar"
+    },
+    {
+        "version": "1.6.4",
+        "url": "https://launcher.mojang.com/v1/objects/050f93c1f3fe9e2052398f7bd6aca10c63d64a87/server.jar",
+        "dest": "minecraft_server.1.6.4.jar"
+    },
+    {
+        "version": "1.5.2",
+        "url": "https://launcher.mojang.com/v1/objects/f9ae3f651319151ce99a0bfad6b34fa16eb6775f/server.jar",
+        "dest": "minecraft_server.1.5.2.jar"
     }
 ]
