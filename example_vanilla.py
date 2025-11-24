@@ -1,6 +1,6 @@
 from yardstick_benchmark.provisioning import Das
 from yardstick_benchmark.monitoring import Telegraf
-from yardstick_benchmark.games.minecraft.server.J1164 import Java1164  
+from yardstick_benchmark.games.minecraft.server.J1164 import Java1164
 from yardstick_benchmark.games.minecraft.workload import WalkAround
 import yardstick_benchmark
 from time import sleep
