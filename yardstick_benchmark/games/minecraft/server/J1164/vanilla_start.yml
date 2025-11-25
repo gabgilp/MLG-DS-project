@@ -7,6 +7,13 @@
       shell:
         cmd: |
           module load java/jdk-17 || true # just in case we are on DAS
+
+          # Newer versions store logs at `logs/latest.log`,
+          # while older versions store logs at `server.log`
+          mkdir -p "{{wd}}/logs"
+          touch "{{wd}}/logs/latest.log"
+          ln -s "logs/latest.log" "{{wd}}/server.log"
+
           nohup java -javaagent:jolokia-agent-jvm-2.0.3-javaagent.jar -jar {{ vanilla_server_jar }} nogui &> /dev/null &
           echo $! > vanillamc.pid
         chdir: "{{ wd }}"
