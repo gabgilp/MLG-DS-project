@@ -8,6 +8,24 @@ from datetime import datetime
 from pathlib import Path
 import os
 import json
+from multiprocessing import Pool
+
+
+ansible_config_path = "ansible.cfg"
+
+content = """\
+[defaults]
+host_key_checking = False
+
+[ssh_connection]
+pipelining = True
+ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+"""
+
+with open(ansible_config_path, 'w') as f:
+    f.write(content)
+
+os.environ["ANSIBLE_CONFIG"] = str(Path.cwd() / ansible_config_path)
 
 
 class Benchmark:
@@ -16,6 +34,12 @@ class Benchmark:
         # We use it in this example to provision bare-metal machines to run our performance
         # evaluation.
         self.das = Das()
+        self.timestamp = (
+            datetime.now()
+            .isoformat(timespec="minutes")
+            .replace("-", "")
+            .replace(":", "")
+        )
 
     def run_version(self, version):
         # We reserve 2 nodes.
@@ -72,23 +96,24 @@ class Benchmark:
             telegraf.stop()
             telegraf.cleanup()
 
-            timestamp = (
-                datetime.now()
-                .isoformat(timespec="minutes")
-                .replace("-", "")
-                .replace(":", "")
-            )
-            dest = Path(f"/var/scratch/{os.getlogin()}/yardstick/{timestamp}/{version}")
+            dest = Path(f"/var/scratch/{os.getlogin()}/yardstick/{self.timestamp}/{version}")
             yardstick_benchmark.fetch(dest, nodes)
         finally:
             yardstick_benchmark.clean(nodes)
             self.das.release(nodes)
 
+    def _run_version(self, item):
+        version = item["version"]
+        print("Starting benchmark for version", version)
+        self.run_version(version)
+        print("Finished benchmark for version", version)
+
     def run(self):
         with open(_VANILLA_VERSION_FILE) as f:
             data = json.load(f)
-            for item in data:
-                self.run_version(item["version"])
+
+        with Pool() as p:
+            p.map(self._run_version, data)
 
 
 if __name__ == "__main__":
