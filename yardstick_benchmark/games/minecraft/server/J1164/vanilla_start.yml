@@ -7,10 +7,12 @@
       shell:
         cmd: |
           module load java/jdk-17 || true # just in case we are on DAS
-          nohup java -javaagent:jolokia-agent-jvm-2.0.3-javaagent.jar -jar {{ vanilla_server_jar }} nogui &> /dev/null &
+          nohup java -javaagent:jolokia-agent-jvm-2.0.3-javaagent.jar -jar {{ vanilla_server_jar }} nogui &
           echo $! > vanillamc.pid
         chdir: "{{ wd }}"
-    - name: Waiting for server to become ready
-      wait_for:
-        path: "{{wd}}/logs/latest.log"
-        search_regex: 'For help, type "help"'
+    - name: Wait for server startup
+      shell: "grep -q 'For help, type \"help\"' {{ wd }}/logs/latest.log"
+      register: mc_log_grep
+      retries: 60       # max 60 tentativi...
+      delay: 1          # ...uno ogni 5 secondi => ~5 minuti
+      until: mc_log_grep.rc == 0

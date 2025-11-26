@@ -18,6 +18,8 @@
       copy:
         content: "eula=true"
         dest: "{{ wd }}/eula.txt"
+    - debug:
+        msg: "working directory is: {{wd}}"
     - name: Download Jolokia JVM Agent
       get_url:
         url: https://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-agent-jvm/2.0.3/jolokia-agent-jvm-2.0.3-javaagent.jar

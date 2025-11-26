@@ -7,9 +7,33 @@ from time import sleep
 from datetime import datetime
 from pathlib import Path
 import os
+import sys
 
+dest = Path(f"/var/scratch/{os.getlogin()}/yardstick/output")
+if dest.exists():
+    shutil.rmtree(dest)
+
+ansible_config_path = "ansible.cfg"
+
+content = """\
+[defaults]
+host_key_checking = False
+
+[ssh_connection]
+pipelining = True
+ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+"""
+
+with open(ansible_config_path, 'w') as f:
+    f.write(content)
+    
+os.environ["ANSIBLE_CONFIG"] = str(Path.cwd() / ansible_config_path)
 if __name__ == "__main__":
-
+    ### Command args : [0]: script name
+    #                  [1]: comparison mode (0 for multiple versions, 1 for single version)
+    #                  [2]: optinonal version to test (only if [1] is 1)
+    mode = sys.argv[1] if len(sys.argv) > 1 else "1"
+    version = sys.argv[2] if len(sys.argv) > 2 else "1.20.1"
     ### DEPLOYMENT ENVIRONMENT ###
 
     # The DAS compute cluster is a medium-sized cluster for research and education.
@@ -47,7 +71,7 @@ if __name__ == "__main__":
         # VanillaMC handles deployment of the official Mojang vanilla server JAR.
         # Pass a version from yardstick_benchmark/games/minecraft/server/J1164/vanilla_version_urls.json
         # (defaults to the first entry if omitted).
-        vanillamc = Java1164(nodes[:1], version="1.20.1")
+        vanillamc = Java1164(nodes[:1], version=version)
         # Perform the deployment, including downloading the vanilla server JAR and
         # correctly configuring the server's properties file.
         vanillamc.deploy()
@@ -60,7 +84,7 @@ if __name__ == "__main__":
         wl.deploy()
         wl.start()
 
-        sleep_time = 300
+        sleep_time = 30
         print(f"sleeping for {sleep_time} seconds")
         sleep(sleep_time)
 
