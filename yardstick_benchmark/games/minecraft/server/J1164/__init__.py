@@ -8,7 +8,7 @@ from yardstick_benchmark.model import Node, RemoteApplication
 _VANILLA_VERSION_FILE = Path(__file__).parent / "vanilla_version_urls.json"
 
 
-def _select_vanilla_version(version: Union[str , None]) -> Dict[str, str]:
+def _select_vanilla_version(version: Union[str, None]) -> Dict[str, str]:
     with _VANILLA_VERSION_FILE.open() as f:
         versions: List[Dict[str, str]] = json.load(f)
 
@@ -27,16 +27,26 @@ def _select_vanilla_version(version: Union[str , None]) -> Dict[str, str]:
                 f"Vanilla version '{version}' not found. Available: {available}"
             )
 
-    for key in ("url", "dest", "version"):
+    for key in ("url", "dest", "version", "java_version"):
         if key not in chosen:
             raise ValueError(f"Missing '{key}' for vanilla version {chosen}")
 
     return chosen
 
 
+def _java_module_from_version(java_version: str) -> str:
+    normalized = str(java_version)
+    if normalized.startswith(("8", "1.8")):
+        return "java/jdk-1.8"
+    if normalized.startswith("17"):
+        return "java/jdk-17"
+    raise ValueError(f"Unsupported java_version '{java_version}' for vanilla server")
+
+
 class Java1164(RemoteApplication):
     def __init__(self, nodes: list[Node], version: Optional[str] = None):
         version_entry = _select_vanilla_version(version)
+        java_version = str(version_entry["java_version"])
 
         super().__init__(
             "vanillamc",
@@ -51,5 +61,7 @@ class Java1164(RemoteApplication):
                 "vanilla_server_url": version_entry["url"],
                 "vanilla_server_jar": version_entry["dest"],
                 "vanilla_version": version_entry["version"],
+                "java_version": java_version,
+                "java_module": _java_module_from_version(java_version),
             },
         )

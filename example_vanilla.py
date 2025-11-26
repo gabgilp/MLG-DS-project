@@ -7,6 +7,27 @@ from time import sleep
 from datetime import datetime
 from pathlib import Path
 import os
+import shutil
+
+dest = Path(f"/var/scratch/{os.getlogin()}/yardstick/output")
+if dest.exists():
+    shutil.rmtree(dest)
+
+ansible_config_path = "ansible.cfg"
+
+content = """\
+[defaults]
+host_key_checking = False
+
+[ssh_connection]
+pipelining = True
+ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+"""
+
+with open(ansible_config_path, 'w') as f:
+    f.write(content)
+    
+os.environ["ANSIBLE_CONFIG"] = str(Path.cwd() / ansible_config_path)
 
 if __name__ == "__main__":
 
