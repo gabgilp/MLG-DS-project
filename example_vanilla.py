@@ -68,7 +68,7 @@ if __name__ == "__main__":
         # VanillaMC handles deployment of the official Mojang vanilla server JAR.
         # Pass a version from yardstick_benchmark/games/minecraft/server/J1164/vanilla_version_urls.json
         # (defaults to the first entry if omitted).
-        vanillamc = Java1164(nodes[:1], version="1.20.1")
+        vanillamc = Java1164(nodes[:1], version="1.10.2")
         # Perform the deployment, including downloading the vanilla server JAR and
         # correctly configuring the server's properties file.
         vanillamc.deploy()
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         wl.deploy()
         wl.start()
 
-        sleep_time = 300
+        sleep_time = 30
         print(f"sleeping for {sleep_time} seconds")
         sleep(sleep_time)
 

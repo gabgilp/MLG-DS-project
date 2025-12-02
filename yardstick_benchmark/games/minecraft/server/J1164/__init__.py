@@ -37,7 +37,7 @@ def _select_vanilla_version(version: Union[str, None]) -> Dict[str, str]:
 def _java_module_from_version(java_version: str) -> str:
     normalized = str(java_version)
     if normalized.startswith(("8", "1.8")):
-        return "java/jdk-1.8"
+        return "java/jdk-8"
     if normalized.startswith("17"):
         return "java/jdk-17"
     raise ValueError(f"Unsupported java_version '{java_version}' for vanilla server")

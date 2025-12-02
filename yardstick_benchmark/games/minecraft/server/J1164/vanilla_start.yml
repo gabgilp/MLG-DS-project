@@ -7,10 +7,32 @@
       shell:
         cmd: |
           module load {{ java_module }} || true # just in case we are on DAS
-          nohup java -javaagent:jolokia-agent-jvm-2.0.3-javaagent.jar -jar {{ vanilla_server_jar }} nogui &> /dev/null &
+          nohup java -javaagent:jolokia-agent-jvm-2.0.3-javaagent.jar -jar {{ vanilla_server_jar }} nogui > server_stdout.log 2>&1 &
           echo $! > vanillamc.pid
         chdir: "{{ wd }}"
     - name: Waiting for server to become ready
-      wait_for:
-        path: "{{wd}}/logs/latest.log"
-        search_regex: 'For help, type "help"'
+      block:
+        - wait_for:
+            path: "{{wd}}/logs/latest.log"
+            search_regex: 'For help, type "help"'
+      rescue:
+        - name: Show server log on failure
+          shell: |
+            if [ -f "{{wd}}/logs/latest.log" ]; then
+              echo "===== tail of latest.log ====="
+              tail -n 200 "{{wd}}/logs/latest.log"
+            elif [ -f "{{wd}}/server_stdout.log" ]; then
+              echo "===== tail of server_stdout.log ====="
+              tail -n 200 "{{wd}}/server_stdout.log"
+            elif [ -f "{{wd}}/nohup.out" ]; then
+              echo "===== tail of nohup.out ====="
+              tail -n 200 "{{wd}}/nohup.out"
+            else
+              echo "No server logs found (checked latest.log, server_stdout.log, nohup.out)"
+            fi
+          register: vanilla_log
+          failed_when: false
+        - debug:
+            msg: "{{ vanilla_log.stdout }}"
+        - fail:
+            msg: "VanillaMC failed to become ready; see log above."
