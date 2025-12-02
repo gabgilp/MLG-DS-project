@@ -1,12 +1,32 @@
 from yardstick_benchmark.provisioning import Das
 from yardstick_benchmark.monitoring import Telegraf
 from yardstick_benchmark.games.minecraft.server.J1164 import Java1164  
-from yardstick_benchmark.games.minecraft.workload import WalkAround
+from yardstick_benchmark.games.minecraft.workload import Fly
 import yardstick_benchmark
 from time import sleep
 from datetime import datetime
 from pathlib import Path
 import os
+
+dest = Path(f"/var/scratch/{os.getlogin()}/yardstick/output")
+if dest.exists():
+    shutil.rmtree(dest)
+
+ansible_config_path = "ansible.cfg"
+
+content = """\
+[defaults]
+host_key_checking = False
+
+[ssh_connection]
+pipelining = True
+ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+"""
+
+with open(ansible_config_path, 'w') as f:
+    f.write(content)
+
+os.environ["ANSIBLE_CONFIG"] = str(Path.cwd() / ansible_config_path)
 
 if __name__ == "__main__":
 
@@ -56,7 +76,7 @@ if __name__ == "__main__":
 
         ### WORKLOAD ###
 
-        wl = WalkAround(nodes[1:], nodes[0].host, bots_per_node=10)
+        wl = Fly(nodes[1:], nodes[0].host)
         wl.deploy()
         wl.start()
 
