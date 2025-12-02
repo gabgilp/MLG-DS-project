@@ -1,7 +1,7 @@
 from yardstick_benchmark.provisioning import Das
 from yardstick_benchmark.monitoring import Telegraf
 from yardstick_benchmark.games.minecraft.server.J1164 import Java1164
-from yardstick_benchmark.games.minecraft.workload import WalkAround
+from yardstick_benchmark.games.minecraft.workload import Fly
 import yardstick_benchmark
 from time import sleep
 from datetime import datetime
@@ -81,7 +81,7 @@ class Benchmark:
 
             ### WORKLOAD ###
 
-            wl = WalkAround(nodes[1:], nodes[0].host, bots_per_node=10)
+            wl = Fly(nodes[1:], nodes[0].host)
             wl.deploy()
             wl.start()
 
