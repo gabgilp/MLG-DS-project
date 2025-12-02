@@ -14,24 +14,19 @@
         nvm --version
       register: nvm_version
       failed_when: nvm_version.rc != 0 and nvm_version.rc != 127
-    - name: Install nvm
-      shell: |
-        wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
-      when: nvm_version.rc == 127
-    - name: Install node 18 and Mineflayer
-      shell:
-        cmd: |
-          source ~/.bashrc
-          nvm install 18
-          npm install mineflayer
-          npm install mineflayer-pathfinder
-        chdir: "{{wd}}"
-    - name: Checkout RCON client
-      git:
-        repo: https://github.com/tehbeard/node-rcon.git
-        dest: "{{wd}}/rcon"
     - name: Copy scripts
       copy:
         src: "{{item}}"
         dest: "{{wd}}"
       with_items: "{{scripts}}"
+    - name: Install nvm
+      shell: |
+        wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+      when: nvm_version.rc == 127
+    - name: Install node 22 and dependencies
+      shell:
+        cmd: |
+          source ~/.bashrc
+          nvm install 22
+          npm ci
+        chdir: "{{wd}}"
