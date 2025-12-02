@@ -1,13 +1,12 @@
 from yardstick_benchmark.provisioning import Das
 from yardstick_benchmark.monitoring import Telegraf
-from yardstick_benchmark.games.minecraft.server.J1164 import Java1164, _VANILLA_VERSION_FILE
+from yardstick_benchmark.games.minecraft.server.J1164 import Java1164
 from yardstick_benchmark.games.minecraft.workload import WalkAround
 import yardstick_benchmark
 from time import sleep
 from datetime import datetime
 from pathlib import Path
 import os
-import json
 from multiprocessing import Pool
 
 
@@ -102,18 +101,16 @@ class Benchmark:
             yardstick_benchmark.clean(nodes)
             self.das.release(nodes)
 
-    def _run_version(self, item):
-        version = item["version"]
+    def _run_version(self, version):
         print("Starting benchmark for version", version)
         self.run_version(version)
         print("Finished benchmark for version", version)
 
     def run(self):
-        with open(_VANILLA_VERSION_FILE) as f:
-            data = json.load(f)
+        versions = ["1.20.1", "1.19.4",  "1.18.2",  "1.17.2"]
 
         with Pool() as p:
-            p.map(self._run_version, data)
+            p.map(self._run_version, versions)
 
 
 if __name__ == "__main__":
