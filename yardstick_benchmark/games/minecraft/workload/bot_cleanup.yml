@@ -1,0 +1,17 @@
+---
+- name: Cleanup workload data
+  gather_facts: true
+  hosts: all
+  tasks:
+    - debug:
+        msg: "working directory is: {{wd}}"
+    - file:
+        path: "{{ wd }}"
+        state: directory
+    # This saves 3.5GB per benchmark
+    - name: Remove unneeded files
+      shell: |
+        find -name node_modules | xargs rm -rf
+        find -name '*.jar' | xargs rm -rf
+        find -name telegraf-1.30.3 | xargs rm -rf
+      chdir: "{{wd}}"
