@@ -28,7 +28,7 @@ os.environ["ANSIBLE_CONFIG"] = str(Path.cwd() / ansible_config_path)
 
 
 class Benchmark:
-    def __init__(self):
+    def __init__(self, dir=f"/var/scratch/{os.getlogin()}/yardstick"):
         # The DAS compute cluster is a medium-sized cluster for research and education.
         # We use it in this example to provision bare-metal machines to run our performance
         # evaluation.
@@ -39,6 +39,7 @@ class Benchmark:
             .replace("-", "")
             .replace(":", "")
         )
+        self.dir = dir + f"/{self.timestamp}"
 
     def run_version(self, version):
         # We reserve 2 nodes.
@@ -95,7 +96,7 @@ class Benchmark:
             telegraf.stop()
             telegraf.cleanup()
 
-            dest = Path(f"/var/scratch/{os.getlogin()}/yardstick/{self.timestamp}/{version}")
+            dest = Path(f"{self.dir}/{version}")
             yardstick_benchmark.fetch(dest, nodes)
         finally:
             yardstick_benchmark.clean(nodes)
@@ -115,4 +116,7 @@ class Benchmark:
 
 if __name__ == "__main__":
     benchmark = Benchmark()
-    benchmark.run()
+    for i in range(30):
+        print(f"===[ Iteration {i} ]===")
+        benchmark.dir = f"/var/scratch/{os.getlogin()}/yardstick/{benchmark.timestamp}/{i}"
+        benchmark.run()
