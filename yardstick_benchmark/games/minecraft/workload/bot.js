@@ -4,7 +4,7 @@ import v from "vec3";
 
 const host = process.env.MC_HOST ?? "localhost";
 // Time (seconds) after which the script will be terminated
-const timeout = parseInt(process.env.DURATION ?? "60");
+const timeout = parseInt(process.env.DURATION ?? "200");
 const variant = process.env.WORKLOAD_VARIANT ?? "fly";
 
 class Bot {
@@ -41,7 +41,7 @@ class Bot {
     async flyWorkload(index) {
         const coordinates = Botnet.coordinatesFromAngle(index);
         const from = coordinates.clone().scale(700);
-        const to = coordinates.clone().scale(2_000);
+        const to = coordinates.clone().scale(5_000);
         from.y = to.y = 90;
         console.log(`bot-${index} ${from} ${to}`);
 
@@ -73,7 +73,7 @@ class Botnet {
     async flyWorkload() {
         for (let i = 0; i < 20; i++) {
             if (i === 5 || i === 10) {
-                await sleep(20_000);
+                await sleep(60_000);
             }
             const bot = new Bot(this.host, `bot-${i}`);
             this.bots.push(bot);
