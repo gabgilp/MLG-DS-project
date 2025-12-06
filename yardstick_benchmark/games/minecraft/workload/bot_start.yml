@@ -12,7 +12,7 @@
       shell:
         cmd: |
           source ~/.bashrc
-          node set_spawn.js
+          node set_spawn.js | tee set_spawn-{{ inventory_hostname }}.log
         chdir: "{{wd}}"
       run_once: true # Only run on one machine
     - name: Run Minecraft bot

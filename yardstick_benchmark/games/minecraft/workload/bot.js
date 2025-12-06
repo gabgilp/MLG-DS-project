@@ -14,6 +14,7 @@ class Bot {
      */
     constructor(host, username) {
         console.log(`New bot: ${username}`);
+        this.username = username;
         this.bot = mineflayer.createBot({
             host, // minecraft server ip
             username, // minecraft username
@@ -21,6 +22,9 @@ class Bot {
         });
         this.bot.on("error", console.error);
         this.bot.on("kicked", console.log);
+        setInterval(() => {
+            console.log(`${username} at ${this.bot.entity?.position}`);
+        }, 5000);
     }
 
     /**
@@ -45,7 +49,7 @@ class Bot {
         from.y = to.y = 90;
         console.log(`bot-${index} ${from} ${to}`);
 
-        await this.spawn();
+        await Promise.race([this.spawn(), sleep(1000)]);
         this.bot.chat("/gamemode spectator");
         this.bot.creative.startFlying();
         this.bot.chat(`/teleport ${from.x} ${from.y} ${from.z}`);
