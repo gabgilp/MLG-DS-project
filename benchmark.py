@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 import os
 from multiprocessing import Pool
+import itertools as it
 
 
 ansible_config_path = "ansible.cfg"
@@ -41,7 +42,7 @@ class Benchmark:
         )
         self.dir = dir + f"/{self.timestamp}"
 
-    def run_version(self, version):
+    def run_version(self, version, iteration):
         # We reserve 2 nodes.
         nodes = self.das.provision(num=2)
 
@@ -96,27 +97,28 @@ class Benchmark:
             telegraf.stop()
             telegraf.cleanup()
 
-            dest = Path(f"{self.dir}/{version}")
+            dest = Path(f"{self.dir}/{iteration}/{version}")
             yardstick_benchmark.fetch(dest, nodes)
         finally:
             yardstick_benchmark.clean(nodes)
             self.das.release(nodes)
 
-    def _run_version(self, version):
-        print("Starting benchmark for version", version)
-        self.run_version(version)
-        print("Finished benchmark for version", version)
+    def _run_version(self, pair):
+        version, iteration = pair
+        print("Starting benchmark iteration", iteration, "for version", version)
+        self.run_version(version, iteration)
+        print("Finished benchmark iteration", iteration, "for version", version)
 
     def run(self):
-        versions = ["1.20.1", "1.19.4",  "1.18.2",  "1.17.2"]
+        pairs = it.product(
+            ["1.20.1", "1.19.4",  "1.18.2",  "1.17.2"],
+            range(30)
+        )
 
-        with Pool() as p:
-            p.map(self._run_version, versions)
+        with Pool(15) as p:
+            p.map(self._run_version, pairs)
 
 
 if __name__ == "__main__":
     benchmark = Benchmark()
-    for i in range(30):
-        print(f"===[ Iteration {i} ]===")
-        benchmark.dir = f"/var/scratch/{os.getlogin()}/yardstick/{benchmark.timestamp}/{i}"
-        benchmark.run()
+    benchmark.run()
