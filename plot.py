@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 debug = False
 
@@ -14,6 +15,7 @@ if len(sys.argv) < 2:
 dest = sys.argv[1]
 raw_data_files = glob.glob(f"{dest}/**/metrics-*.csv", recursive=True)
 
+# Split metrics into separate files
 for raw_data_file in raw_data_files:
     metrics_file = Path(raw_data_file)
     keys = {}
@@ -46,30 +48,46 @@ for cpu_file in server_cpus:
         df["timestamp"] > 120)]["timestamp"].min()
     df["timestamp"] = df["timestamp"].transform(lambda x: x - steep_increase)
     df["timestamp_m"] = df["timestamp"] / 60
+    # very fancy
+    df["players"] = np.where(
+        df["timestamp_m"].between(0, 1),
+        5,
+        np.where(
+            df["timestamp_m"].between(1, 2),
+            10,
+            np.where(
+                df["timestamp_m"].between(2, 3),
+                20,
+                0
+            )
+        )
+    )
     df = df.sort_values("util", ascending=False).drop_duplicates(
         subset=["timestamp", "cpu"], keep="first")
     dfs.append(df)
 df = pd.concat(dfs, ignore_index=True)
 
-if debug:
+if not debug:
     # If you plan to debug: check if the plots line up
-    custom_params = {"axes.spines.right": False, "axes.spines.top": False}
-    sns.set_theme(style="ticks", rc=custom_params)
-    ax = sns.lineplot(df, x="timestamp_m", y="util", hue="version")
-    ax.grid(axis="y")
-    ax.set_ylim(bottom=0)
-    ax.set_ylabel("CPU utilization [%]")
-    ax.set_xlabel("Time [m]")
-    plt.show()
+    df = df[df["timestamp_m"].between(-0.5, 3.5)]
+    plt.xlim(-0.5, 3.5)
 
-p5 = df[df["timestamp_m"].between(0, 1)]
-p10 = df[df["timestamp_m"].between(1, 2)]
-p20 = df[df["timestamp_m"].between(2, 3)]
+custom_params = {"axes.spines.right": False, "axes.spines.top": False}
+sns.set_theme(style="ticks", rc=custom_params)
+ax = sns.lineplot(df, x="timestamp_m", y="util", hue="version")
+ax.grid(axis="y")
+ax.set_ylim(bottom=0)
+ax.set_ylabel("CPU utilization [%]")
+ax.set_xlabel("Time [m]")
+plt.show()
 
-for p, n in zip([p5, p10, p20], [5, 10, 20]):
-    util = p.groupby("version")["util"]
-    plt.errorbar(util.mean().index, util.mean(), yerr=util.std(),
-                 capsize=3, fmt="-o", label=f"{n} players")
+# Take the average of the entire minute
+avg_util = df.groupby(["version", "iter", "players"])["util"].mean().reset_index()
+avg_util = avg_util[avg_util["players"] != 0]
 
-plt.legend()
+sns.boxplot(data=avg_util, x="version", y="util", hue="players", palette="Pastel2")
+plt.title("Average CPU Utilization per iteration")
+plt.ylabel("Average CPU Utilization [%]")
+plt.xlabel("Version")
+plt.legend(title="Player count")
 plt.show()
