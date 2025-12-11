@@ -213,7 +213,7 @@ def plot_mem(plot_ax, boxplot_ax):
     ax.grid(axis="y")
     ax.set_title("Memory Utilization")
     ax.set_ylim(bottom=0)
-    ax.set_ylabel("Tick duration [ms]")
+    ax.set_ylabel("Memory Utilization [%]")
     ax.set_xlabel("Time [m]")
     ax.legend([], [], frameon=False)
 
@@ -228,6 +228,71 @@ def plot_mem(plot_ax, boxplot_ax):
     ax.legend([], [], frameon=False)
 
 
+def get_net_df():
+    net_files = glob.glob(f"{dest}/**/vanillamc-*/../*/net.csv", recursive=True)
+
+    dfs = []
+    for net_file in net_files:
+        df = pd.read_csv(net_file, names=[
+            "timestamp", "label", "node", "interface", "bytes_sent", "bytes_recv",
+            # There are more columns, but we don't need them and I'm not sure what they are
+            *(f"misc{i}" for i in range(100))
+        ])
+        df = df[df["interface"] == "eth0"]
+        offset_times(df)
+        # df["timestamp"] = df["timestamp"].transform(lambda x: x - x.min())
+        df["timestamp_m"] = df["timestamp"] / 60
+        df["bytes_sent"] = df["bytes_sent"].transform(lambda x: x - df[df["timestamp"] == 0]["bytes_sent"])
+        df["send_rate"] = df["bytes_sent"] / df["timestamp"]
+        df["send_rate_kbps"] = df["send_rate"] / 1024
+        df["version"] = Path(net_file).resolve().parent.parent.parent.name
+        df["iter"] = Path(net_file).resolve().parent.parent.parent.parent.name
+        # very fancy
+        df["players"] = np.where(
+            df["timestamp_m"].between(0, 1),
+            5,
+            np.where(
+                df["timestamp_m"].between(1, 2),
+                10,
+                np.where(
+                    df["timestamp_m"].between(2, 3),
+                    20,
+                    0
+                )
+            )
+        )
+
+        dfs.append(df)
+    return pd.concat(dfs, ignore_index=True)
+
+
+def plot_net(plot_ax, boxplot_ax):
+    df = get_net_df()
+    if not debug:
+        df = df[df["timestamp_m"].between(-0.5, 3.5)]
+        boxplot_ax.set_xlim(-0.5, 3.5)
+
+    custom_params = {"axes.spines.right": False, "axes.spines.top": False}
+    sns.set_theme(style="ticks", rc=custom_params)
+    ax = sns.lineplot(df, x="timestamp_m", y="send_rate_kbps", hue="version", ax=plot_ax)
+    ax.grid(axis="y")
+    ax.set_title("Network Send Rate")
+    ax.set_ylim(bottom=0)
+    ax.set_ylabel("Send Rate [kB/s]")
+    ax.set_xlabel("Time [m]")
+    ax.legend([], [], frameon=False)
+
+    # Take the average of the entire minute
+    avg_td = df.groupby(["version", "iter", "players"])["send_rate_kbps"].mean().reset_index()
+    avg_td = avg_td[avg_td["players"] != 0]
+
+    ax = sns.boxplot(data=avg_td, x="version", y="send_rate_kbps", hue="players", palette="Pastel2", ax=boxplot_ax)
+    ax.set_title("Network Send Rate")
+    ax.set_ylabel("Send Rate [kB/s]")
+    ax.set_xlabel("Version")
+    ax.legend([], [], frameon=False)
+
+
 cpu_df = get_cpu_df()
 mapping = pd.Series(cpu_df["timestamp"].values, index=cpu_df["timestamp_abs"]).to_dict()
 
@@ -237,6 +302,7 @@ fig_boxplot, axs_boxplot = plt.subplots(3, 2, figsize=(6, 7))
 # metrics: ["RAM usage", "CPU load", "Disk usage", "Network usage", "Tick duration"]
 plot_mem(axs_plot[0, 0], axs_boxplot[0, 0])
 plot_cpu(axs_plot[0, 1], axs_boxplot[0, 1])
+plot_net(axs_plot[1, 1], axs_boxplot[1, 1])
 plot_tick(axs_plot[2, 0], axs_boxplot[2, 0])
 
 axs_plot[2, 0].legend(loc=(1.5, 0.5))
