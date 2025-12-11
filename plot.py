@@ -76,32 +76,32 @@ def get_cpu_df():
     return pd.concat(dfs, ignore_index=True)
 
 
-def plot_cpu():
+def plot_cpu(plot_ax, boxplot_ax):
     df = get_cpu_df()
     if not debug:
         # If you plan to debug: check if the plots line up
         df = df[df["timestamp_m"].between(-0.5, 3.5)]
-        plt.xlim(-0.5, 3.5)
+        boxplot_ax.set_xlim(-0.5, 3.5)
 
     custom_params = {"axes.spines.right": False, "axes.spines.top": False}
     sns.set_theme(style="ticks", rc=custom_params)
-    ax = sns.lineplot(df, x="timestamp_m", y="util", hue="version")
+    ax = sns.lineplot(df, x="timestamp_m", y="util", hue="version", ax=plot_ax)
     ax.grid(axis="y")
+    ax.set_title("CPU Utilization")
     ax.set_ylim(bottom=0)
     ax.set_ylabel("CPU utilization [%]")
     ax.set_xlabel("Time [m]")
-    plt.show()
+    ax.legend([], [], frameon=False)
 
     # Take the average of the entire minute
     avg_util = df.groupby(["version", "iter", "players"])["util"].mean().reset_index()
     avg_util = avg_util[avg_util["players"] != 0]
 
-    sns.boxplot(data=avg_util, x="version", y="util", hue="players", palette="Pastel2")
-    plt.title("Average CPU Utilization per iteration")
-    plt.ylabel("Average CPU Utilization [%]")
-    plt.xlabel("Version")
-    plt.legend(title="Player count")
-    plt.show()
+    ax = sns.boxplot(data=avg_util, x="version", y="util", hue="players", palette="Pastel2", ax=boxplot_ax)
+    ax.set_title("CPU Utilization")
+    ax.set_ylabel("CPU Utilization [%]")
+    ax.set_xlabel("Version")
+    ax.legend([], [], frameon=False)
 
 
 def get_tick_df():
@@ -134,33 +134,33 @@ def get_tick_df():
     return pd.concat(dfs, ignore_index=True)
 
 
-def plot_tick():
+def plot_tick(plot_ax, boxplot_ax):
     df = get_tick_df()
     if not debug:
         df = df[df["timestamp_m"].between(-0.5, 3.5)]
-        plt.xlim(-0.5, 3.5)
+        boxplot_ax.set_xlim(-0.5, 3.5)
 
     custom_params = {"axes.spines.right": False, "axes.spines.top": False}
     sns.set_theme(style="ticks", rc=custom_params)
-    ax = sns.lineplot(df, x="timestamp_m", y="tick_duration_ms", hue="version")
+    ax = sns.lineplot(df, x="timestamp_m", y="tick_duration_ms", hue="version", ax=plot_ax)
     ax.grid(axis="y")
+    ax.set_title("Tick duration")
     ax.set_ylim(bottom=0)
     ax.set_ylabel("Tick duration [ms]")
     ax.set_xlabel("Time [m]")
-    plt.show()
+    ax.legend([], [], frameon=False)
 
     # Take the average of the entire minute
     avg_td = df.groupby(["version", "iter", "players"])["tick_duration_ms"].mean().reset_index()
     avg_td = avg_td[avg_td["players"] != 0]
 
-    sns.boxplot(data=avg_td, x="version", y="tick_duration_ms", hue="players", palette="Pastel2")
-    plt.title("Average tick duration per iteration")
-    plt.ylabel("Average tick duration [ms]")
-    plt.xlabel("Version")
+    ax = sns.boxplot(data=avg_td, x="version", y="tick_duration_ms", hue="players", palette="Pastel2", ax=boxplot_ax)
+    ax.set_title("Tick duration")
+    ax.set_ylabel("Tick duration [ms]")
+    ax.set_xlabel("Version")
     # There are fliers in the thousands
-    plt.ylim(0, 300)
-    plt.legend(title="Player count")
-    plt.show()
+    ax.set_ylim(0, 300)
+    ax.legend([], [], frameon=False)
 
 
 def get_mem_df():
@@ -201,34 +201,50 @@ def get_mem_df():
     return pd.concat(dfs, ignore_index=True)
 
 
-def plot_mem():
+def plot_mem(plot_ax, boxplot_ax):
     df = get_mem_df()
     if not debug:
         df = df[df["timestamp_m"].between(-0.5, 3.5)]
-        plt.xlim(-0.5, 3.5)
+        boxplot_ax.set_xlim(-0.5, 3.5)
 
     custom_params = {"axes.spines.right": False, "axes.spines.top": False}
     sns.set_theme(style="ticks", rc=custom_params)
-    ax = sns.lineplot(df, x="timestamp_m", y="used_percent", hue="version")
+    ax = sns.lineplot(df, x="timestamp_m", y="used_percent", hue="version", ax=plot_ax)
     ax.grid(axis="y")
+    ax.set_title("Memory Utilization")
     ax.set_ylim(bottom=0)
     ax.set_ylabel("Tick duration [ms]")
     ax.set_xlabel("Time [m]")
-    plt.show()
+    ax.legend([], [], frameon=False)
 
     # Take the average of the entire minute
     avg_td = df.groupby(["version", "iter", "players"])["used_percent"].mean().reset_index()
     avg_td = avg_td[avg_td["players"] != 0]
 
-    sns.boxplot(data=avg_td, x="version", y="used_percent", hue="players", palette="Pastel2")
-    plt.title("Average Memory Utilization per iteration")
-    plt.ylabel("Average Memory Utilization [%]")
-    plt.xlabel("Version")
-    plt.legend(title="Player count")
-    plt.show()
+    ax = sns.boxplot(data=avg_td, x="version", y="used_percent", hue="players", palette="Pastel2", ax=boxplot_ax)
+    ax.set_title("Memory Utilization")
+    ax.set_ylabel("Memory Utilization [%]")
+    ax.set_xlabel("Version")
+    ax.legend([], [], frameon=False)
 
 
 cpu_df = get_cpu_df()
 mapping = pd.Series(cpu_df["timestamp"].values, index=cpu_df["timestamp_abs"]).to_dict()
 
-plot_mem()
+fig_plot, axs_plot = plt.subplots(3, 2, figsize=(6, 7))
+fig_boxplot, axs_boxplot = plt.subplots(3, 2, figsize=(6, 7))
+
+# metrics: ["RAM usage", "CPU load", "Disk usage", "Network usage", "Tick duration"]
+plot_mem(axs_plot[0, 0], axs_boxplot[0, 0])
+plot_cpu(axs_plot[0, 1], axs_boxplot[0, 1])
+plot_tick(axs_plot[2, 0], axs_boxplot[2, 0])
+
+axs_plot[2, 0].legend(loc=(1.5, 0.5))
+fig_plot.subplots_adjust(0.11, 0.11, 0.95, 0.95, hspace=0.7, wspace=0.3)
+axs_boxplot[2, 0].legend(loc=(1.5, 0.5))
+fig_boxplot.subplots_adjust(0.11, 0.11, 0.95, 0.95, hspace=0.7, wspace=0.3)
+axs_plot[2, 1].remove()
+axs_boxplot[2, 1].remove()
+
+fig_plot.savefig("plot.pdf")
+fig_boxplot.savefig("boxplot.pdf")
