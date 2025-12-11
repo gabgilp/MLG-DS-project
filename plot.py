@@ -162,7 +162,73 @@ def plot_tick():
     plt.legend(title="Player count")
     plt.show()
 
+
+def get_mem_df():
+    mem_files = glob.glob(f"{dest}/**/vanillamc-*/../*/mem.csv", recursive=True)
+
+    dfs = []
+    for mem_file in mem_files:
+        df = pd.read_csv(mem_file, names=[
+            "timestamp", "label", "node", "active", "available",
+            "available_percent", "buffered", "cached", "commit_limit", "committed_as", "dirty",
+            "free", "high_free", "high_total", "huge_page_size", "huge_pages_free",
+            "huge_pages_total", "inactive", "low_free", "low_total", "mapped", "page_tables",
+            "shared", "slab", "sreclaimable", "sunreclaim", "swap_cached", "swap_free",
+            "swap_total", "total", "used", "used_percent", "vmalloc_chunk", "vmalloc_total",
+            "vmalloc_used", "wired", "write_back", "write_back_tmp"
+        ])
+        offset_times(df)
+        # df["timestamp"] = df["timestamp"].transform(lambda x: x - x.min())
+        df["timestamp_m"] = df["timestamp"] / 60
+        df["version"] = Path(mem_file).resolve().parent.parent.parent.name
+        df["iter"] = Path(mem_file).resolve().parent.parent.parent.parent.name
+        # very fancy
+        df["players"] = np.where(
+            df["timestamp_m"].between(0, 1),
+            5,
+            np.where(
+                df["timestamp_m"].between(1, 2),
+                10,
+                np.where(
+                    df["timestamp_m"].between(2, 3),
+                    20,
+                    0
+                )
+            )
+        )
+
+        dfs.append(df)
+    return pd.concat(dfs, ignore_index=True)
+
+
+def plot_mem():
+    df = get_mem_df()
+    if not debug:
+        df = df[df["timestamp_m"].between(-0.5, 3.5)]
+        plt.xlim(-0.5, 3.5)
+
+    custom_params = {"axes.spines.right": False, "axes.spines.top": False}
+    sns.set_theme(style="ticks", rc=custom_params)
+    ax = sns.lineplot(df, x="timestamp_m", y="used_percent", hue="version")
+    ax.grid(axis="y")
+    ax.set_ylim(bottom=0)
+    ax.set_ylabel("Tick duration [ms]")
+    ax.set_xlabel("Time [m]")
+    plt.show()
+
+    # Take the average of the entire minute
+    avg_td = df.groupby(["version", "iter", "players"])["used_percent"].mean().reset_index()
+    avg_td = avg_td[avg_td["players"] != 0]
+
+    sns.boxplot(data=avg_td, x="version", y="used_percent", hue="players", palette="Pastel2")
+    plt.title("Average Memory Utilization per iteration")
+    plt.ylabel("Average Memory Utilization [%]")
+    plt.xlabel("Version")
+    plt.legend(title="Player count")
+    plt.show()
+
+
 cpu_df = get_cpu_df()
 mapping = pd.Series(cpu_df["timestamp"].values, index=cpu_df["timestamp_abs"]).to_dict()
 
-plot_tick()
+plot_mem()
