@@ -31,6 +31,11 @@ for raw_data_file in raw_data_files:
         fd.close()
 
 
+def print_table(data: pd.DataFrame | pd.Series, column_name: str):
+    print(column_name)
+    print(data.groupby(["version", "players"])[column_name].agg(["mean", "std"]))
+
+
 def offset_times(df):
     # TODO: verify if this gives the correct offset
     df["timestamp"] = df["timestamp"].replace(mapping)
@@ -103,6 +108,8 @@ def plot_cpu(plot_ax, boxplot_ax):
     ax.set_xlabel("Version")
     ax.legend([], [], frameon=False)
 
+    print_table(avg_util, "util")
+
 
 def get_tick_df():
     tick_times_file = glob.glob(f"{dest}/**/vanillamc-*/../*/minecraft_tick_times.csv", recursive=True)
@@ -161,6 +168,8 @@ def plot_tick(plot_ax, boxplot_ax):
     # There are fliers in the thousands
     ax.set_ylim(0, 300)
     ax.legend([], [], frameon=False)
+
+    print_table(avg_td, "tick_duration_ms")
 
 
 def get_mem_df():
@@ -226,6 +235,8 @@ def plot_mem(plot_ax, boxplot_ax):
     ax.set_ylabel("Memory Utilization [%]")
     ax.set_xlabel("Version")
     ax.legend([], [], frameon=False)
+
+    print_table(avg_td, "used_percent")
 
 
 def get_net_df():
@@ -295,6 +306,8 @@ def plot_net_send(plot_ax, boxplot_ax):
     ax.set_xlabel("Version")
     ax.legend([], [], frameon=False)
 
+    print_table(avg_td, "send_rate_kbps")
+
 
 def plot_net_recv(plot_ax, boxplot_ax):
     df = get_net_df()
@@ -321,6 +334,8 @@ def plot_net_recv(plot_ax, boxplot_ax):
     ax.set_ylabel("Receive Rate [kB/s]")
     ax.set_xlabel("Version")
     ax.legend([], [], frameon=False)
+
+    print_table(avg_td, "recv_rate_kbps")
 
 
 cpu_df = get_cpu_df()
