@@ -37,7 +37,6 @@ def print_table(data: pd.DataFrame | pd.Series, column_name: str):
 
 
 def offset_times(df):
-    # TODO: verify if this gives the correct offset
     df["timestamp"] = df["timestamp"].replace(mapping)
 
 
@@ -106,6 +105,7 @@ def plot_cpu(plot_ax, boxplot_ax):
     ax.set_title("CPU Utilization")
     ax.set_ylabel("CPU Utilization [%]")
     ax.set_xlabel("Version")
+    ax.tick_params(axis='x', labelrotation=30)
     ax.legend([], [], frameon=False)
 
     print_table(avg_util, "util")
@@ -167,6 +167,7 @@ def plot_tick(plot_ax, boxplot_ax):
     ax.set_xlabel("Version")
     # There are fliers in the thousands
     ax.set_ylim(0, 300)
+    ax.tick_params(axis='x', labelrotation=30)
     ax.legend([], [], frameon=False)
 
     print_table(avg_td, "tick_duration_ms")
@@ -234,6 +235,7 @@ def plot_mem(plot_ax, boxplot_ax):
     ax.set_title("Memory Utilization")
     ax.set_ylabel("Memory Utilization [%]")
     ax.set_xlabel("Version")
+    ax.tick_params(axis='x', labelrotation=30)
     ax.legend([], [], frameon=False)
 
     print_table(avg_td, "used_percent")
@@ -304,6 +306,7 @@ def plot_net_send(plot_ax, boxplot_ax):
     ax.set_title("Network Send Rate")
     ax.set_ylabel("Send Rate [kB/s]")
     ax.set_xlabel("Version")
+    ax.tick_params(axis='x', labelrotation=30)
     ax.legend([], [], frameon=False)
 
     print_table(avg_td, "send_rate_kbps")
@@ -333,6 +336,7 @@ def plot_net_recv(plot_ax, boxplot_ax):
     ax.set_title("Network Receive Rate")
     ax.set_ylabel("Receive Rate [kB/s]")
     ax.set_xlabel("Version")
+    ax.tick_params(axis='x', labelrotation=30)
     ax.legend([], [], frameon=False)
 
     print_table(avg_td, "recv_rate_kbps")
@@ -341,8 +345,8 @@ def plot_net_recv(plot_ax, boxplot_ax):
 cpu_df = get_cpu_df()
 mapping = pd.Series(cpu_df["timestamp"].values, index=cpu_df["timestamp_abs"]).to_dict()
 
-fig_plot, axs_plot = plt.subplots(3, 2, figsize=(6, 7))
-fig_boxplot, axs_boxplot = plt.subplots(3, 2, figsize=(6, 7))
+fig_plot, axs_plot = plt.subplots(3, 2, figsize=(4.8, 5.6))
+fig_boxplot, axs_boxplot = plt.subplots(3, 2, figsize=(4.8, 5.6))
 
 # metrics: ["RAM usage", "CPU load", "Disk usage", "Network usage", "Tick duration"]
 plot_mem(axs_plot[0, 0], axs_boxplot[0, 0])
@@ -352,9 +356,9 @@ plot_net_send(axs_plot[1, 1], axs_boxplot[1, 1])
 plot_tick(axs_plot[2, 0], axs_boxplot[2, 0])
 
 axs_plot[2, 0].legend(title="Minecraft version", loc=(1.5, 0))
-fig_plot.subplots_adjust(0.11, 0.11, 0.95, 0.95, hspace=0.7, wspace=0.3)
+fig_plot.subplots_adjust(0.14, 0.11, 0.95, 0.95, hspace=0.7, wspace=0.4)
 axs_boxplot[2, 0].legend(title="Player count", loc=(1.5, 0))
-fig_boxplot.subplots_adjust(0.11, 0.11, 0.95, 0.95, hspace=0.7, wspace=0.3)
+fig_boxplot.subplots_adjust(0.13, 0.11, 0.95, 0.94, hspace=1.0, wspace=0.4)
 axs_plot[2, 1].remove()
 axs_boxplot[2, 1].remove()
 
