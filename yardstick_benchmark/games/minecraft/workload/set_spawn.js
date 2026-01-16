@@ -1,5 +1,5 @@
 // @ts-check
-import RCON from "rcon-srcds";
+import {Rcon} from "rcon-client";
 
 const host = process.env.MC_HOST;
 const spawn_x = process.env.SPAWN_X;
@@ -10,10 +10,11 @@ if (host === undefined) {
 }
 
 try {
-    const rcon = new RCON({ host, port: 25575 });
-    await rcon.authenticate("password");
+    console.log("Connecting...");
+    const rcon = new Rcon({ host, port: 25575, password: "password" });
+    await rcon.connect();
     console.log("Connected and authenticated.");
-    const response = await rcon.execute(
+    const response = await rcon.send(
         `setworldspawn ${spawn_x} 4 ${spawn_z}`,
     );
     console.log(`Response: ${response}`);
@@ -21,7 +22,7 @@ try {
         const response = await rcon.execute(`op bot-${i}`);
         console.log(`Response: ${response}`);
     }
-    rcon.disconnect();
+    rcon.end();
 } catch (error) {
     console.error(`An error occured: ${error}`);
 }

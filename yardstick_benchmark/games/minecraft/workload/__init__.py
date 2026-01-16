@@ -10,7 +10,7 @@ class Fly(RemoteApplication):
         self,
         nodes: list[Node],
         server_host: str,
-        duration: timedelta = timedelta(seconds=60),
+        duration: timedelta = timedelta(seconds=200),
         spawn_x: int = 0,
         spawn_y: int = 0,
         workload_variant: str = "fly",
