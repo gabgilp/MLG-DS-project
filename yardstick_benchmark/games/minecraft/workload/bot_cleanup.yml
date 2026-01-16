@@ -1,17 +1,27 @@
 ---
-- name: Cleanup workload data
-  gather_facts: true
+- name: Cleanup chicken farm workload artifacts but keep logs
+  gather_facts: false
   hosts: all
   tasks:
-    - debug:
-        msg: "working directory is: {{wd}}"
-    - file:
-        path: "{{ wd }}"
-        state: directory
-    # This saves 3.5GB per benchmark
-    - name: Remove unneeded files
+    - name: Check workload directory
+      stat:
+        path: "{{ wd | default('.') }}"
+      register: workload_wd
+      failed_when: false
+
+    - name: Find items to remove (keep *.log)
       shell: |
-        find -name node_modules | xargs rm -rf
-        find -name '*.jar' | xargs rm -rf
-        find -name telegraf-1.30.3 | xargs rm -rf
-      chdir: "{{wd}}"
+        find "{{ wd | default('.') }}" -mindepth 1 -maxdepth 1 \
+          ! -name "*.log" -print
+      register: workload_cleanup_paths
+      changed_when: false
+      failed_when: false
+      when: workload_wd.stat.exists | default(false)
+
+    - name: Remove workload artifacts except logs
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ workload_cleanup_paths.stdout_lines | default([]) }}"
+      when:
+        - workload_wd.stat.exists | default(false)

@@ -1,0 +1,37 @@
+---
+- name: Stop chicken farm bots
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Find bot pid files
+      find:
+        paths: "{{ wd | default('.') }}"
+        patterns: "bot-*.pid"
+        file_type: file
+      register: pid_files
+      failed_when: false
+
+    - name: Kill running bot processes
+      shell: |
+        set -e
+        if [ -s "{{ item.path }}" ]; then
+          PID=$(cat "{{ item.path }}")
+          if [ -n "$PID" ] && [ -d "/proc/$PID" ]; then
+            kill "$PID" || true
+            sleep 1
+            if [ -d "/proc/$PID" ]; then
+              kill -9 "$PID" || true
+            fi
+          fi
+        fi
+      loop: "{{ pid_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      ignore_errors: true
+
+    - name: Remove pid files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ pid_files.files }}"
+      when: pid_files is defined

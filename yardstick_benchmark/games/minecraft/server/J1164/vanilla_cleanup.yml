@@ -1,0 +1,27 @@
+---
+- name: Cleanup VanillaMC artifacts but keep logs
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Check server working directory
+      stat:
+        path: "{{ wd | default('.') }}"
+      register: server_wd
+      failed_when: false
+
+    - name: Find items to remove (keep *.log)
+      shell: |
+        find "{{ wd | default('.') }}" -mindepth 1 -maxdepth 1 \
+          ! -name "*.log" -print
+      register: server_cleanup_paths
+      changed_when: false
+      failed_when: false
+      when: server_wd.stat.exists | default(false)
+
+    - name: Remove server artifacts except logs
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ server_cleanup_paths.stdout_lines | default([]) }}"
+      when:
+        - server_wd.stat.exists | default(false)

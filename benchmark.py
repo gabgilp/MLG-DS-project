@@ -1,7 +1,7 @@
 from yardstick_benchmark.provisioning import Das
 from yardstick_benchmark.monitoring import Telegraf
 from yardstick_benchmark.games.minecraft.server.J1164 import Java1164
-from yardstick_benchmark.games.minecraft.workload import Fly
+from yardstick_benchmark.games.minecraft.workload import ChickenFarm
 import yardstick_benchmark
 from time import sleep
 from datetime import datetime
@@ -9,6 +9,7 @@ from pathlib import Path
 import os
 from multiprocessing import Pool
 import itertools as it
+from datetime import timedelta
 
 
 ansible_config_path = "ansible.cfg"
@@ -27,6 +28,10 @@ with open(ansible_config_path, 'w') as f:
 
 os.environ["ANSIBLE_CONFIG"] = str(Path.cwd() / ansible_config_path)
 
+# Configurable durations
+warmup = 0  # seconds to let world/workload settle before measuring, actually discard this, telegraf starts at the beginning anyway
+measurement = 300  # seconds to keep workload/monitoring running
+
 
 class Benchmark:
     def __init__(self, dir=f"/var/scratch/{os.getlogin()}/yardstick"):
@@ -42,7 +47,7 @@ class Benchmark:
         )
         self.dir = dir + f"/{self.timestamp}"
 
-    def run_version(self, version, iteration):
+    def run_version(self, version, farm_count, trial):
         # We reserve 2 nodes.
         nodes = self.das.provision(num=2)
 
@@ -83,11 +88,18 @@ class Benchmark:
 
             ### WORKLOAD ###
 
-            wl = Fly(nodes[1:], nodes[0].host)
+            wl = ChickenFarm(
+                nodes[1:],
+                nodes[0].host,
+                duration=timedelta(seconds=warmup + measurement + 30),
+                spawn_x=0,
+                spawn_y=0,
+                player_count=farm_count,
+            )
             wl.deploy()
             wl.start()
 
-            sleep_time = 300
+            sleep_time = 60
             print(f"sleeping for {sleep_time} seconds")
             sleep(sleep_time)
 
@@ -97,25 +109,30 @@ class Benchmark:
             telegraf.stop()
             telegraf.cleanup()
 
-            dest = Path(f"{self.dir}/{iteration}/{version}")
+            dest = Path(f"{self.dir}/version_{version}/farms_{farm_count}/trial_{trial}")
             yardstick_benchmark.fetch(dest, nodes)
         finally:
             yardstick_benchmark.clean(nodes)
             self.das.release(nodes)
 
     def _run_version(self, pair):
-        version, iteration = pair
-        print("Starting benchmark iteration", iteration, "for version", version)
-        self.run_version(version, iteration)
-        print("Finished benchmark iteration", iteration, "for version", version)
+        version, farm_count, trial = pair
+        print(
+            f"Starting trial {trial} for version {version} with {farm_count} farms/bots",
+        )
+        self.run_version(version, farm_count, trial)
+        print(
+            f"Finished trial {trial} for version {version} with {farm_count} farms/bots",
+        )
 
     def run(self):
         pairs = it.product(
             ["1.20.1", "1.19.4",  "1.18.2",  "1.17.2"],
-            range(30)
+            [1, 5, 10, 15, 20, 25],
+            range(10),
         )
 
-        with Pool(15) as p:
+        with Pool(10) as p:
             p.map(self._run_version, pairs)
 
 

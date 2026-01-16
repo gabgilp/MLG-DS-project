@@ -1,0 +1,27 @@
+---
+- hosts: all
+  gather_facts: True
+  environment:
+    DURATION: "{{duration}}"
+    MC_HOST: "{{mc_host}}"
+    SPAWN_X: "{{spawn_x}}"
+    SPAWN_Y: "{{spawn_y}}"
+    PLAYER_COUNT: "{{player_count}}"
+    WORKLOAD_VARIANT: "chicken_farm"
+  tasks:
+    - name: Set game spawn location
+      shell:
+        cmd: |
+          source ~/.bashrc
+          node set_spawn.js
+        chdir: "{{wd}}"
+      run_once: true
+    - name: Run chicken farm bot
+      shell:
+        cmd: |
+          source ~/.bashrc
+          nvm use 22
+          BOT_INDEX={{ item }} nohup node chicken_farm.js > bot-{{ inventory_hostname }}-{{ item }}.log 2>&1 &
+          echo $! > bot-{{ inventory_hostname }}-{{ item }}.pid
+        chdir: "{{wd}}"
+      loop: "{{ range(player_count|int)|list }}"
