@@ -1,4 +1,5 @@
 {
     "python.formatting.provider": "black",
-    "ansible.python.interpreterPath": "/home/jdonkerv/.pyenv/versions/3.9.17/bin/python"
+    "ansible.python.interpreterPath": "/home/jdonkerv/.pyenv/versions/3.9.17/bin/python",
+    "python.analysis.typeCheckingMode": "off"
 }

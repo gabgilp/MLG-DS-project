@@ -1,0 +1,27 @@
+---
+- name: Cleanup chicken farm workload artifacts but keep logs
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Check workload directory
+      stat:
+        path: "{{ wd | default('.') }}"
+      register: workload_wd
+      failed_when: false
+
+    - name: Find items to remove (keep *.log)
+      shell: |
+        find "{{ wd | default('.') }}" -mindepth 1 -maxdepth 1 \
+          ! -name "*.log" -print
+      register: workload_cleanup_paths
+      changed_when: false
+      failed_when: false
+      when: workload_wd.stat.exists | default(false)
+
+    - name: Remove workload artifacts except logs
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ workload_cleanup_paths.stdout_lines | default([]) }}"
+      when:
+        - workload_wd.stat.exists | default(false)

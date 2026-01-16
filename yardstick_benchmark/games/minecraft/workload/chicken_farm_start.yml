@@ -21,8 +21,7 @@
         cmd: |
           source ~/.bashrc
           nvm use 22
-          node chicken_farm.js | tee bot-{{ inventory_hostname }}.log
-          echo $! > bot-{{inventory_hostname}}.pid
+          BOT_INDEX={{ item }} nohup node chicken_farm.js > bot-{{ inventory_hostname }}-{{ item }}.log 2>&1 &
+          echo $! > bot-{{ inventory_hostname }}-{{ item }}.pid
         chdir: "{{wd}}"
-      environment:
-        BOT_INDEX: "{{ groups['all'].index(inventory_hostname) }}"
+      loop: "{{ range(player_count|int)|list }}"

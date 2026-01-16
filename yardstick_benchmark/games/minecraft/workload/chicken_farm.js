@@ -1,6 +1,7 @@
 // @ts-check
 import mineflayer from "mineflayer";
 import v from "vec3";
+import rconPkg from "rcon-srcds";
 
 const host = process.env.MC_HOST ?? "localhost";
 const timeout = numberFromEnv("DURATION", 60);
@@ -17,7 +18,13 @@ const FARM_SPACING_X = 12;
 const FARM_SPACING_Z = 8;
 const CHICKENS_PER_FARM = 8;
 const VIEW_HEIGHT = 10;
-const COMMAND_DELAY_MS = 300;
+const COMMAND_DELAY_MS = 750; // chat fallback pacing
+const RCON_DELAY_MS = 50; // small gap between RCON commands
+const rconPassword = process.env.RCON_PASSWORD ?? "password";
+const rconPort = numberFromEnv("RCON_PORT", 25575);
+const RCON = rconPkg?.default?.default ?? rconPkg?.default ?? rconPkg;
+/** @type {import("rcon-srcds").default | null} */
+let rconClient = null;
 
 const bot = mineflayer.createBot({
     host,
@@ -201,6 +208,25 @@ async function onceSpawn(bot) {
  */
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Ensure an RCON connection; fallback is null.
+ */
+async function ensureRcon() {
+    if (rconClient !== null) {
+        return rconClient;
+    }
+    try {
+        const client = new RCON({ host, port: rconPort });
+        await client.authenticate(rconPassword);
+        rconClient = client;
+        console.log("RCON connected.");
+    } catch (err) {
+        console.warn(`RCON unavailable, falling back to chat: ${err}`);
+        rconClient = null;
+    }
+    return rconClient;
 }
 
 /**
@@ -405,9 +431,16 @@ function blueprintBlocks() {
  * @param {string} command
  */
 async function sendCommand(bot, command) {
-    console.log(`> ${command}`);
-    bot.chat(command);
-    await sleep(COMMAND_DELAY_MS);
+    const client = await ensureRcon();
+    if (client) {
+        console.log(`> [rcon] ${command}`);
+        await client.execute(command);
+        await sleep(RCON_DELAY_MS);
+    } else {
+        console.log(`> ${command}`);
+        bot.chat(command);
+        await sleep(COMMAND_DELAY_MS);
+    }
 }
 
 /**
