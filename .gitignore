@@ -3,6 +3,7 @@
 
 # Matplotlib
 *.pdf
+!docs/*.pdf
 
 ### Ansible ###
 *.retry

@@ -12,3 +12,5 @@ To run this benchmark,
 3. Run `plot.py` with the raw data directory as argument.
    This creates `plot.pdf` with metrics over time,
    and `boxplot.pdf` with metrics per player count.
+
+For details about the design and results of this benchmark, see the [report](Lab_Report.pdf).
